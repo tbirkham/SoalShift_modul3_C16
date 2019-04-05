@@ -14,12 +14,11 @@ Contoh:
 	5! = 120
 
 #### Jawaban :
-Untuk menjawab soal ini, kami membutuhkan 2 fungsi yang akan dipanggil dalam fungsi `main()`.
+- Untuk menjawab soal ini, kami membutuhkan 2 fungsi yang akan dipanggil dalam fungsi `main()`.
 
+- Fungsi pertama adalah fungsi `fact()` yang digunakan untuk menghitung faktorial itu sendiri.
 
-Fungsi pertama adalah fungsi `fact()` yang digunakan untuk menghitung faktorial itu sendiri.
-
-Perhitungan faktorial dimulai di dalam while :
+- Perhitungan faktorial dimulai di dalam while :
 ```
 while(i<=n)
         {
@@ -28,11 +27,11 @@ while(i<=n)
         }
 	
 ```
-Fungsi kedua adalah fungsi `sort()` yang berguna untuk menyeleksi bilangan agar berurut.
+- Fungsi kedua adalah fungsi `sort()` yang berguna untuk menyeleksi bilangan agar berurut.
 
-Di dalam fungsi `sort()` ini juga terdapat variable `swap` untuk menukar posisi bilangan setelah input.
+- Di dalam fungsi `sort()` ini juga terdapat variable `swap` untuk menukar posisi bilangan setelah input.
 
-Swap (penukaran) tersebut terjadi saat :
+- Swap (penukaran) tersebut terjadi saat :
 ```
 for (i=0; i<a; i++){
     	for (j=0; j<a-i; j++){
@@ -45,22 +44,22 @@ for (i=0; i<a; i++){
 	}
 	
 ```
-Lalu, pemanggilan kedua fungsi tersebut terjadi di dalam fungsi `main()` dengan parameter `int argc, char* argv[]`
+- Lalu, pemanggilan kedua fungsi tersebut terjadi di dalam fungsi `main()` dengan parameter `int argc, char* argv[]`
 
-Di dalam fungsi `main()` sendiri terdapat pengonversian string `ptr` menjadi integer pada saat :
+- Di dalam fungsi `main()` sendiri terdapat pengonversian string `ptr` menjadi integer pada saat :
 ```
 for (i=0; i<argc-1; i++){
 		konv=strtol(argv[i + 1], &ptr, 10);
 		temp[i]=konv;
 	}
 ```
-Serta pemanggilan fungsi `sort()` :
+- Serta pemanggilan fungsi `sort()` :
 ```
 sort(temp, argc);
 ```
-Juga terdapat pembuatan thread yang memeliki parameter berupa fungsi `fact` sendiri.
+- Juga terdapat pembuatan thread yang memeliki parameter berupa fungsi `fact` sendiri.
 
-Thread tersebut juga berguna untuk mengecek error atau tidak.
+- Thread tersebut juga berguna untuk mengecek error atau tidak.
 ```
 for(b=0;b<argc-1;b++)
 	{ 
@@ -77,7 +76,6 @@ for(b=0;b<argc-1;b++)
 
 	}
 ```
-
 
 ## Nomor 2
 Pada suatu hari ada orang yang ingin berjualan 1 jenis barang secara private, dia memintamu membuat program C dengan spesifikasi sebagai berikut:
