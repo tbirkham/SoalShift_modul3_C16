@@ -107,10 +107,204 @@ g. Server penjual akan mencetak stok saat ini setiap 5 detik sekali
 **h. Menggunakan thread, socket, shared memory**
 
 #### Jawaban :
+Penyelesaian soal ini membutuhkan masing-masing 2 dari Server dan Client yang mewakilkan Server Pembeli, Client Pembeli, Server Penjual,
+dan Client Penjual.
 
+Kami menggunakan `PORT 8080` untuk menghubungkan antar server dengan client penjual dengan cara mendefine port tersebut :
+```
+#define PORT 8080
+```
+Lalu, kami menggunakan `PORT 8081` untuk menghubungkan antar server dengan client pembeli dengan cara mendefine port tersebut :
+```
+#define PORT 8081
+```
+1. Server Penjual
+- Terdapat fungsi `update()` untuk memberi info tentang jumlah stock yang tersedia saat itu.
+```
+void *update(void *arg){
+	while(1){
+		printf("Jumlah Stock Saat Ini: %d\n", *stock);
+		sleep(5);
+	}
+}
+```
+- Inisialisasi shared memory untuk saling memberi info antar server pembeli dan penjual tentang info stok tersebut.
+```
+key_t key = 1234;
+   
+int shmid = shmget(key, sizeof(int), IPC_CREAT | 0666);
+    
+stock = shmat(shmid, NULL, 0);
+```    
+- Lalu, di dalam fungsi main sendiri kami menginisialisasi socket untuk server penjual sendiri.
+```
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+      
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
 
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons( PORT );
+      
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
 
+    if (listen(server_fd, 3) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+```
+- Setelah itu, akan di cek sesuai perintah soal. Server harus mengetahui perintah tambah jika client mengirimkan perintah tersebut.
+```
+while(valread = read( new_socket , buffer, 1024) > 0) {
+		        char t[10]="tambah";
+            if(strcmp(buffer,t) == 0) {
+                *stock += 1;
+            }
+```
+- Memanggil shared memory agar jumlah stock antar server pembeli dengan penjual bisa terhubung.
+```
+shmdt(stock);
+shmctl(shmid , IPC_RMID,NULL);
+```
 
+2. Client Penjual
+- Inisialisasi socket memory.
+```
+if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("\n Socket creation error \n");
+        return -1;
+    }
+```
+- Set memory dan mengembalikan nilai jumlah memory
+```
+memset(&serv_addr, '0', sizeof(serv_addr));
+```
+- Inisialisasi client agar terhubung ke port yang digunakan yaitu `PORT 8080`.
+```
+serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+      
+    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0) {
+        printf("\nInvalid address/ Address not supported \n");
+        return -1;
+    }
+  
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        printf("\nConnection Failed \n");
+        return -1;
+    }
+```
+- Client penjual akan menginput suatu string sesuai perintah. `scanf("%c", &enter);` untuk penyimpanan spasi
+```
+while(1) {
+        char input[10];
+	      char enter;
+        scanf("%[^\n]s", input);
+	      scanf("%c", &enter);
+        
+        send(sock, input, strlen(input), 0);
+    }
+```
+
+3. Server Pembeli
+- Inisialisasi shared memory dan juga thread yang digunakan agar bisa saling terhubung tentang info stock antar pembeli dan penjual.
+```
+    key_t key = 1234; 
+    pthread_t tid;
+    
+    int shmid = shmget(key, sizeof(int), IPC_CREAT | 0666); 
+    stock = shmat(shmid, NULL, 0); 
+```
+- Selanjutnya akan menginisalisasi server menggunakan socket memory.
+```
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+      
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons( PORT );
+      
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (listen(server_fd, 3) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+```
+- Disini, server akan mengirimkan info berdasarkan sisa stock yang tersedia, apakah habis atau masih ada dan masih bisa di beli.
+```
+    	char *habis = "Transaksi gagal"; 
+    	char *masih = "Transaksi berhasil";    	
+    	while((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))>0){ 
+        while(valread=read( new_socket,buffer,1024)>0){
+        	char b[10] = "beli";
+            if( strcmp(buffer, b)==0 ) {
+                if(*stock==0){
+                	send(new_socket,habis, strlen(habis),0);
+				        }       
+                else {
+                    *stock-=1;
+                    send(new_socket,masih, strlen(masih), 0);
+                }
+            }
+```
+
+4. Client Pembeli
+- Sama seperti client penjual, terdapat inisialisasi socket yang digunakan serta mengeset memory dan mengembalikan jumlah memory tsb.
+```
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("\n Socket creation error \n");
+        return -1;
+    }
+  
+    memset(&serv_addr, '0', sizeof(serv_addr));
+```
+- Inisialisasi client agar terhubung dengan server yang memiliki port yang sama yaitu `PORT 8081`.
+```
+    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0) {
+        printf("\nInvalid address/ Address not supported \n");
+        return -1;
+    }
+  
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        printf("\nConnection Failed \n");
+        return -1;
+    }
+```
+- Client pembeli akan menginput suatu string sesuai perintah soal. `printf("%s\n", buffer);` berguna untuk menampilkan pesan berhasil atau gagal.
+```
+    while(1){
+        char input[10];
+        char enter;
+        scanf("%[^\n]s", input);
+	      scanf("%c", &enter); //untuk nyimpen spasi
+		
+        send(sock,input,strlen(input),0);
+        
+        valread = read(sock, buffer, 1024);
+        printf("%s\n", buffer); //nampilin pesan berhasil atau gagal
+        memset(buffer, 0, sizeof(buffer));
+    }
+```
 
 ## Nomor 3 
 Agmal dan Iraj merupakan 2 sahabat yang sedang kuliah dan hidup satu kostan, sayangnya mereka mempunyai gaya hidup yang berkebalikan, dimana Iraj merupakan laki-laki yang sangat sehat,rajin berolahraga dan bangun tidak pernah kesiangan sedangkan Agmal hampir menghabiskan setengah umur hidupnya hanya untuk tidur dan ‘ngoding’. Dikarenakan mereka sahabat yang baik, Agmal dan iraj sama-sama ingin membuat satu sama lain mengikuti gaya hidup mereka dengan cara membuat Iraj sering tidur seperti Agmal, atau membuat Agmal selalu bangun pagi seperti Iraj. Buatlah suatu program C untuk menggambarkan kehidupan mereka dengan spesifikasi sebagai berikut:
