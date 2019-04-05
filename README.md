@@ -14,7 +14,7 @@ Contoh:
 	5! = 120
 
 #### Jawaban :
-Di soal ini, kami membutuhkan 2 fungsi yang akan dipanggil dalam fungsi `main()`.
+Untuk menjawab soal ini, kami membutuhkan 2 fungsi yang akan dipanggil dalam fungsi `main()`.
 
 
 Fungsi pertama adalah fungsi `fact()` yang digunakan untuk menghitung faktorial itu sendiri.
