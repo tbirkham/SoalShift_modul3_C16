@@ -289,11 +289,110 @@ Buatlah sebuah program C dimana dapat menyimpan list proses yang sedang berjalan
 - Boleh menggunakan system
 
 #### Jawaban :
+Untuk menyelesaikan soal ini, kami membuat 2 fungsi yaitu `void* proses(void* arg)` dan fungsi `void* unzip(void* arg)`
+
+Kemudian kami juga membuat sebuah struct yang mempunyai variable `int no_proses` untuk menyimpan nomor proses yang sedang dijalankan.
+```
+struct Nomer{
+	int no_proses;
+};
+```
+
+Di dalam fungsi `main()` , kami membuat dan menginisialisasikan nilai variable sebagai berikut:
+
+`pthread_t thread[5];` : membuat array bertipe thread sebanyak 5 slot (untuk jaga-jaga);
+
+`struct Nomer nomer;` : mendeklarasikan struct dan memberi nama **nomer**.
+
+`nomer.no_proses = 0;` : menginisialisasikan nilai variable **no_proses** milik struct **nomer** dengan nilai 0.
+
+Karena di soal hanya diminta untuk membuat folder dan filenya sebanyak 2 dengan penamaan (namafile)1.txt dan (namafile)2.txt, maka kami melakukan iterasi dengan for sebanyak 2x mulai dari 1 sampai 2.
+```
+for(int i=1;i<=2;i++){
+		nomer.no_proses = i;
+		pthread_create(&thread[i], NULL, &proses , (void *)&nomer);
+        pthread_join(thread[i],NULL);
+	}
+```
+
+`nomer.no_proses` nilainya akan disesuaikan dengan urutan iterasi.
+
+Kemudian masuk ke tahap thread yang bernama `proses` dan mengoper struct **nomer**.
+
+Berikut penjabaran thread `proses`.
 
 
+```
+void* proses(void* arg){
+	char direktori[100];
+	char nama[100];
+	char command[100],command2[100],command3[100];
+	struct Nomer*n =  (struct Nomer*)arg;
 
+	// membuat file .txt dan folder	
+	sprintf(direktori, "~/Documents/FolderProses%d" , n->no_proses );
+	sprintf(command,"mkdir ~/Documents/FolderProses%d", n->no_proses);
+    system(command);
+    
+    sprintf(nama, "%s/SimpanProses%d.txt", direktori,n->no_proses);
+    sprintf(command2,"ps -ax | head -10 > %s" , nama);
+    system(command2);
+    
+    // membuat zip
+    sprintf(command3, "zip -qmj %s/KompresProses%d.zip %s" , direktori, n->no_proses, nama);
+    system(command3);
+}
+```
 
+Script `struct Nomer*n =  (struct Nomer*)arg;` digunakan untuk mengoper struct **nomer** yang ada di fungsi `main()` agar bisa diakses dalam fungsi `proses(void* arg)`.
 
+Untuk membuat folder , dilakukan dengan script
+`sprintf(command,"mkdir ~/Documents/FolderProses%d", n->no_proses);`
+
+Untuk membuat file .txt yang berisikan maksimal 10 list proses, dilakukan dengan script `sprintf(command2,"ps -ax | head -10 > %s" , nama);`
+
+Kemudian untuk membuat file .zip nya yaitu dengan script sebagai berikut
+```
+sprintf(command3, "zip -qmj %s/KompresProses%d.zip %s" , direktori, n->no_proses, nama);
+```
+
+perintah `zip -qmj` akan otomatis mengkompres file .txt menjadi file .zip, dan file .txt nya akan langsung dihapus.
+
+Kemudian file .zip nya akan diunzip setelah 15 detik proses membuat file .zip tadi selesai.
+ Maka kami membuat iterasi selama 15x dengan memberi sleep(1) sebagai berikut :
+ ```
+ printf("Tunggu 15 detik!\n");
+	for(int i=1;i<=15;i++){
+		printf("%d\n", i);
+		sleep(1);
+	}
+```
+
+Setelah itu melakukan iterasi untuk proses unzip nya dengan script sebagai berikut :
+```
+for(int i=1;i<=2;i++){
+		nomer.no_proses=i;
+		pthread_create(&thread[i], NULL, &unzip, (void *)&nomer);
+        pthread_join(thread[i],NULL);
+	}
+```
+
+Berikut penjabaran thread `unzip`
+```
+void* unzip(void* arg){
+	char command[100];
+	char direktori[100];
+	char nama[100];
+	struct Nomer*n = (struct Nomer*)arg;
+	sprintf(direktori, "~/Documents/FolderProses%d" , n->no_proses );
+    sprintf(command, "unzip -j %s/KompresProses%d.zip -d %s", direktori, n->no_proses, direktori);
+    system(command);
+}
+```
+
+Script `sprintf(command, "unzip -j %s/KompresProses%d.zip -d %s", direktori, n->no_proses, direktori);` akan meng-unzip file-file .zip tadi.
+
+Selesai.
 
 ## Nomor 5
 Angga, adik Jiwang akan berulang tahun yang ke sembilan pada tanggal 6 April besok. Karena lupa menabung, Jiwang tidak mempunyai uang sepeserpun untuk membelikan Angga kado. Kamu sebagai sahabat Jiwang ingin membantu Jiwang membahagiakan adiknya sehingga kamu menawarkan bantuan membuatkan permainan komputer sederhana menggunakan program C. Jiwang sangat menyukai idemu tersebut. Berikut permainan yang Jiwang minta. 
