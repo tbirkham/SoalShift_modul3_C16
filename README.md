@@ -138,6 +138,7 @@ b. Kedua karakter memiliki status yang unik
 Untuk menyelesaikan soal ini, kami membuat 3 fungsi yaitu `void AllStatus()` , `void *bangun( void *arg)` dan fungsi `void *tidur( void *arg)`.
 
 Masing-masing kegunaan dari fungsi tersebut sebagai berikut
+
 - `void AllStatus()` : jika fitur "All Status" dijalankan maka fungsi ini akan dipanggil untuk menampilkan nilai WakeUp_Status milik Agmal dan Spirit_Status milik Siraj.
 - `void *bangun(void *arg)` : jika fitur "Agmal Ayo Bangun" dijalankan, maka akan memanggil fungsi ini yang gunanya adalah untuk menambah WakeUp_Status milik Agmal sebanyak 15.
 - `void *tidur(void *arg)` : jika fitur "Iraj Ayo Tidur" dijalankan, maka akan memanggil fungsi ini yang gunanya adalah untuk mengurangi Spirit_Status milik Iraj sebanyak 20.
@@ -145,12 +146,19 @@ Masing-masing kegunaan dari fungsi tersebut sebagai berikut
 Kemudian, buat variable sebagai berikut :
 
 `int WakeUp_Status = 0;` : inisialisasi WakeUp_Status milik Agmal.
+
 `int Spirit_Status = 100;` : inisialisasi Spirit_Status milik Iraj.
+
 `pthread_t t1, t2;` : thread yang akan digunakan, sebanyak 2 thread.
+
 `char request[100];` : untuk menampung fitur yang akan dipanggil.
+
 `char enter;` : untuk menyimpan karakter enter.
+
 `int counterA=0;` : untuk menghitung berapa kali fitur "Agmal Ayo Bangun" dijalankan.
+
 `int counterI=0;` : untuk menghitung berapa kali fitur "Iraj Ayo Tidur" dijalankan.
+
 `int gas=0;` : untuk menandai fitur mana yang sedang dijalankan.
 
 Kemudian masuk ke fungsi `main()` .
@@ -159,12 +167,16 @@ Setelah memasukkan fitur apa yang ingin dijalankan, maka nilainya akan tersimpan
 
 Kemudian akan dicek dengan fungsi `strcmp` seperti berikut :
 
-`if( strcmp(request,"All Status") == 0 ){
+```
+if( strcmp(request,"All Status") == 0 ){
 				AllStatus();
-			}`
+			}
+```
+
 Jika fitur yang dijalankan adalah "All Status" , maka akan memanggil fungsi `AllStatus()` dan menampilkan WakeUp_Status dan Spirit_Status saat itu.
 
-```else if( strcmp(request,"Agmal Ayo Bangun") == 0 ){
+```
+else if( strcmp(request,"Agmal Ayo Bangun") == 0 ){
 				counterA++;
 				agmal++;
 				//printf("counter a : %d\n", counterA);
