@@ -135,10 +135,129 @@ b. Kedua karakter memiliki status yang unik
    - **Syarat Menggunakan Lebih dari 1 Thread**
 
 #### Jawaban :
+Untuk menyelesaikan soal ini, kami membuat 3 fungsi yaitu `void AllStatus()` , `void *bangun( void *arg)` dan fungsi `void *tidur( void *arg)`.
 
+Masing-masing kegunaan dari fungsi tersebut sebagai berikut
+- `void AllStatus()` : jika fitur "All Status" dijalankan maka fungsi ini akan dipanggil untuk menampilkan nilai WakeUp_Status milik Agmal dan Spirit_Status milik Siraj.
+- `void *bangun(void *arg)` : jika fitur "Agmal Ayo Bangun" dijalankan, maka akan memanggil fungsi ini yang gunanya adalah untuk menambah WakeUp_Status milik Agmal sebanyak 15.
+- `void *tidur(void *arg)` : jika fitur "Iraj Ayo Tidur" dijalankan, maka akan memanggil fungsi ini yang gunanya adalah untuk mengurangi Spirit_Status milik Iraj sebanyak 20.
 
+Kemudian, buat variable sebagai berikut :
 
+`int WakeUp_Status = 0;` : inisialisasi WakeUp_Status milik Agmal.
+`int Spirit_Status = 100;` : inisialisasi Spirit_Status milik Iraj.
+`pthread_t t1, t2;` : thread yang akan digunakan, sebanyak 2 thread.
+`char request[100];` : untuk menampung fitur yang akan dipanggil.
+`char enter;` : untuk menyimpan karakter enter.
+`int counterA=0;` : untuk menghitung berapa kali fitur "Agmal Ayo Bangun" dijalankan.
+`int counterI=0;` : untuk menghitung berapa kali fitur "Iraj Ayo Tidur" dijalankan.
+`int gas=0;` : untuk menandai fitur mana yang sedang dijalankan.
 
+Kemudian masuk ke fungsi `main()` .
+
+Setelah memasukkan fitur apa yang ingin dijalankan, maka nilainya akan tersimpan dalam variable `request[100]`.
+
+Kemudian akan dicek dengan fungsi `strcmp` seperti berikut :
+
+`if( strcmp(request,"All Status") == 0 ){
+				AllStatus();
+			}`
+Jika fitur yang dijalankan adalah "All Status" , maka akan memanggil fungsi `AllStatus()` dan menampilkan WakeUp_Status dan Spirit_Status saat itu.
+
+```else if( strcmp(request,"Agmal Ayo Bangun") == 0 ){
+				counterA++;
+				agmal++;
+				//printf("counter a : %d\n", counterA);
+				
+				gas=1;
+				pthread_create( &t1, NULL, bangun, NULL);
+				
+				
+				if(counterA == 3){
+					counterA = 0;
+					printf("Fitur Iraj Ayo Tidur disabled 10 s\n");
+					sleep(10);
+				}
+				
+			}
+```
+
+Jika fitur yang dijalankan adalah "Agmal Ayo Bangun", maka counter untuk Agmal akan bertambah, variable gas diset = 1 , dan membuat thread yang bernama `bangun`. 
+
+Untuk thread `bangun` sendiri adalah seperti berikut ini
+```
+void *bangun( void *arg){
+	while(1){
+		if( gas!= 1){
+			continue;
+		}
+		if(gas==1){
+			WakeUp_Status += 15;
+			gas=0;
+		}
+	}	
+}
+```
+Jika gas tidak sama dengan 1 maka sistem akan dilanjutkan. Jika gas = 1 , itu tandanya memang benar fitur "Agmal Ayo Bangun" sedang dijalankan, maka nilai WakeUp_Status akan ditambah sebanyak 15, kemudian gas diset kembali menjadi 0.
+
+Setelah itu akan dicek, apabila counter untuk Agmal sudah mencapai 3 yang artinya fitur "Agmal Ayo Bangun" sudah dijalankan sebanyak 3x, maka counternya akan diset kembali menjadi 0 , dan akan mencetak pesan seperti diatas dan system akan sleep selama 10 s.
+
+```
+else if( strcmp(request,"Iraj Ayo Tidur") == 0){
+				counterI++;
+				iraj++;
+				//printf("counter i : %d\n", counterI);
+				
+				gas=2;
+				pthread_create( &t2, NULL, tidur, NULL);
+				
+				if(counterI == 3){
+					counterI = 0;
+					printf("Agmal Ayo Bangun disabled 10 s\n");
+					sleep(10);
+				}
+			}
+```
+Jika fitur yang dijalankan adalah "Iraj Ayo Tidur", maka counter untuk Iraj akan bertambah, variable gas diset = 2 , dan membuat thread yang bernama `tidur`. 
+
+Untuk thread `tidur` sendiri adalah seperti berikut ini
+```
+void *tidur( void *arg){
+	while(1){
+		if( gas!=2){
+			continue;
+		}
+		if(gas == 2){
+			Spirit_Status -= 20;
+			gas=0;
+		}
+	}
+}
+```
+Jika gas tidak sama dengan 2 maka sistem akan dilanjutkan. Jika gas = 2 , itu tandanya memang benar fitur "Iraj Ayo Tidur" sedang dijalankan, maka nilai Spirit_Status akan dikurangi sebanyak 20, kemudian gas diset kembali menjadi 0.
+
+Setelah itu akan dicek, apabila counter untuk Iraj sudah mencapai 3 yang artinya fitur "Iraj Ayo Tidur" sudah dijalankan sebanyak 3x, maka counternya akan diset kembali menjadi 0 , dan akan mencetak pesan seperti diatas dan system akan sleep selama 10 s.
+
+Kemudian nilai WakeUp_Status dan Spirit_Status akan dicek
+
+```
+if(WakeUp_Status>=100 || agmal == 7){
+			agmal=0;
+			printf("Agmal Terbangun, mereka bangun pagi dan berolahraga\n\n");
+			break;
+			}
+			if(Spirit_Status<=0 || iraj == 5){
+				iraj=0;
+				printf("Iraj ikut tidur, dan bangun kesiangan bersama Agmal\n\n");
+				break;
+			}
+```
+
+Jika nilai WakeUp_Status sudah mencapai 100 atau lebih , atau (ini hanya untuk jaga-jaga) fitur "Agmal Ayo Bangun" telah dijalankan sebanyak 7x yang berarti WakeUp_Statusnya = 15 x 7 = 105 , maka akan tercetak pesan seperti diatas dan program dibreak atau terhenti.
+
+Kemudian, dicek juga apabila nilai Spirit_Status sudah mencapai 0 atau kurang dari 0 , atau (ini hanya untuk jaga-jaga) fitur "Iraj Ayo Tidur" telah dijalankan sebanyak 5x yang berarti Spirit_Statusnya = 100 - (20 x 5) = 0 , maka akan tercetak pesan seperti diatas dan program dibreak atau terhenti.
+
+Selesai.
 
 
 ## Nomor 4
