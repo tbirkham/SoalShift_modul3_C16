@@ -13,9 +13,69 @@ Contoh:
 	5! = 120
 
 #### Jawaban :
+Di soal ini, kami membutuhkan 2 fungsi yang akan dipanggil dalam fungsi `main()`.
 
 
+Fungsi pertama adalah fungsi `fact()` yang digunakan untuk menghitung faktorial itu sendiri.
 
+Perhitungan faktorial dimulai di dalam while :
+```
+while(i<=n)
+        {
+            hasil=hasil*i; //counting factorial
+			++i;
+        }
+	
+```
+Fungsi kedua adalah fungsi `sort()` yang berguna untuk menyeleksi bilangan agar berurut.
+
+Di dalam fungsi `sort()` ini juga terdapat variable `swap` untuk menukar posisi bilangan setelah input.
+
+Swap (penukaran) tersebut terjadi saat :
+```
+for (i=0; i<a; i++){
+    	for (j=0; j<a-i; j++){
+    		if (temp[j] < temp[j-1]){
+    		swap = temp[j-1];
+    		temp[j-1]= temp[j];
+    		temp[j]= swap;
+			}	
+		}
+	}
+	
+```
+Lalu, pemanggilan kedua fungsi tersebut terjadi di dalam fungsi `main()` dengan parameter `int argc, char* argv[]`
+
+Di dalam fungsi `main()` sendiri terdapat pengonversian string `ptr` menjadi integer pada saat :
+```
+for (i=0; i<argc-1; i++){
+		konv=strtol(argv[i + 1], &ptr, 10);
+		temp[i]=konv;
+	}
+```
+Serta pemanggilan fungsi `sort()` :
+```
+sort(temp, argc);
+```
+Juga terdapat pembuatan thread yang memeliki parameter berupa fungsi `fact` sendiri.
+
+Thread tersebut juga berguna untuk mengecek error atau tidak.
+```
+for(b=0;b<argc-1;b++)
+	{ 
+		err = pthread_create(&(tid[b]),NULL,&fact,NULL); //making thread
+		if(err!=0) //error checking
+		{
+			
+		}
+		else
+		{
+
+		}
+		pthread_join(tid[b],NULL);
+
+	}
+```
 
 
 
